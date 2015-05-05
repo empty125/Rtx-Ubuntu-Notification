@@ -30,11 +30,12 @@ func main() {
 	fmt.Printf("connect to:%s\n", *address)
 	defer conn.Close()
 
+	reader := bufio.NewReader(conn)
 	//watch
 	for {
 		if CheckFile(f, 2) {
 			fmt.Fprintf(conn, "You got a new rtx message \n")
-			result, err := bufio.NewReader(conn).ReadString('\n')
+			result, err := reader.ReadString('.')
 			if err != nil {
 				fmt.Println("err:" + err.Error())
 			}

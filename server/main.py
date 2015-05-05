@@ -16,9 +16,11 @@ class NotificationUDPHandler(socketserver.BaseRequestHandler):
 			data
 			))
 		notify.show(now_time+' '+data)
-		socket.sendto("ok \n".encode('utf-8'),self.client_address)
+		socket.sendto(("%s ok ." % now_time).encode('utf-8'),self.client_address)
 
 
 if __name__ =="__main__":
-	server = socketserver.UDPServer(("192.168.122.1", 10086), NotificationUDPHandler)
+	HOST = ("192.168.122.1", 10086)
+	print("server listen at %s:%d" % HOST)
+	server = socketserver.UDPServer(HOST, NotificationUDPHandler)
 	server.serve_forever()
