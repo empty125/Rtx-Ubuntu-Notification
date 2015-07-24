@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var pingTime uint = 0
+
 func main() {
 	address := flag.String("h", "192.168.122.1:10086", "server address")
 	flag.Parse()
@@ -31,19 +33,40 @@ func main() {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
+
 	//watch
 	for {
+		pingInterval(conn, reader, 60)
 		if CheckFile(f, 2) {
 			fmt.Fprintf(conn, "You got a new rtx message \n")
-			result, err := reader.ReadString('.')
+			text, err := reader.ReadString('\n')
 			if err != nil {
 				fmt.Println("err:" + err.Error())
+				continue
 			}
-			fmt.Println(result)
+			fmt.Print(text)
 		}
 		time.Sleep(2000 * time.Millisecond)
 	}
 
+}
+
+func pingInterval(conn net.Conn, reader *bufio.Reader, interval uint) {
+	nowTime := uint(time.Now().Unix())
+	if nowTime-pingTime < interval {
+		return
+	}
+	pingTime = nowTime
+	fmt.Fprintf(conn, "PING")
+	text, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Printf("ping failed:%s\n", err.Error())
+		return
+	}
+	if text != "PONG\n" {
+		fmt.Printf("ping failed:invaild response")
+		return
+	}
 }
 
 func OpenFile() (*os.File, error) {
@@ -55,11 +78,11 @@ func OpenFile() (*os.File, error) {
 	return f, nil
 }
 
-func CheckFile(f *os.File, interval int) bool {
+func CheckFile(f *os.File, interval uint) bool {
 	statinfo, err := f.Stat()
 	if err != nil {
 		fmt.Printf("stat: %e", err.Error())
 	}
-	real_interval := int(time.Now().Unix() - statinfo.ModTime().Unix())
+	real_interval := uint(time.Now().Unix() - statinfo.ModTime().Unix())
 	return real_interval <= interval
 }

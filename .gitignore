@@ -58,4 +58,4 @@ target/
 
 # test files
 client/main
-client/im.dbU201505
+client/im.db*

@@ -10,16 +10,23 @@ from . import notify
 class NotificationUDPHandler(socketserver.BaseRequestHandler):
 
 	def handle(self):
-		data = self.request[0].decode('utf-8').strip()
-		socket = self.request[1]
-		now_time = datetime.now().strftime("%H:%M:%S")
-		print("{0} {1} wrote:{2}".format(
-			now_time,
-			self.client_address[0],			
-			data
-			))
-		notify.show(now_time+' '+data)
-		socket.sendto(("%s ok ." % now_time).encode('utf-8'),self.client_address)
+		data,socket =  self.request
+		data =data.decode('utf-8').strip()
+		reponse_text = "\n"
+		if data == 'PING':
+			reponse_text = 'PONG'
+			print("reponse pong")
+		else:
+			now_time = datetime.now().strftime("%H:%M:%S")
+			print("{0} {1} wrote:{2}".format(
+				now_time,
+				self.client_address[0],			
+				data
+				))
+			notify.show(now_time+' '+data)
+			reponse_text = "%s ok" % now_time
+		socket.sendto(("%s\n" % reponse_text).encode('utf-8'),self.client_address)
+
 
 host = "192.168.122.1"
 port = 10086
